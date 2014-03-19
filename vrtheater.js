@@ -49,12 +49,12 @@ VRTheater.Player = function(video, options) {
 	// Handle adding the Canvas to the page
 	switch (this.options.initialSize) {
 		case "coverVideo":
-			this.canvas.style.width = this.video.width;
-			this.canvas.style.height = this.video.height;
+			this.canvas.width = this.video.offsetWidth;
+			this.canvas.height = this.video.offsetHeight;
 			this.canvas.style.zIndex = 1;
 			if (this.video.style.zIndex)
 				this.canvas.style.zIndex = 1 + parseInt(this.video.style.zIndex);
-			this.video.parent.appendChild(this.canvas);
+			this.video.parentNode.appendChild(this.canvas);
 			break;
 		case "fillWindow":
 			this.canvas.style.position = "fixed";
@@ -76,10 +76,7 @@ VRTheater.Player = function(video, options) {
 
 	// Handle asking for Fullscreen
 	if (this.options.startFullscreen === true) {
-		this.canvas.requestFullscreen();
-		this.canvas.mozRequestFullScreen();
-		this.canvas.webkitRequestFullscreen();
-		this.canvas.msRequestFullscreen();
+		this.toggleFullscreen(true);
 	}
 
 	// Add OculusRiftEffect
@@ -97,25 +94,154 @@ VRTheater.Player = function(video, options) {
 		overdraw: true,
 		side:THREE.DoubleSide
 	});
-	this.sceen = new THREE.Mesh(this.geometry, material);
-	this.sceen.position.z = -10;
+	this.screen = new THREE.Mesh(this.geometry, material);
+	this.screen.position.z = -10;
 	this.video.addEventListener("resize", function(){ alert("Not resizing screen due to developer laziness"); }, false);
-	this.scene.add(this.sceen);
+	this.scene.add(this.screen);
 
 	// Set up skybox thing
 	var cubegeometry = new THREE.CubeGeometry(100, 100, 200);
 	var cubematerial = new THREE.MeshBasicMaterial( { color: 0x111111, side: THREE.BackSide } );
 	var cube = new THREE.Mesh( cubegeometry, cubematerial );
 	this.scene.add(cube);
+
+	// Set up keyboard capture
+	document.addEventListener("keydown", function(e) {
+		e = e || window.event;
+		switch (e.keyCode) {
+			case 38: // up arrow
+				this.zoom(1);
+				break;
+			case 40: // down arrow
+				this.zoom(-1);
+				break;
+			case 32: // spacebar
+				this.togglePlayback();
+				break;
+			case 27: // esc
+				this.destroy();
+				break;
+			case 77: // M
+				this.mode3D = (this.mode3D + 1) % 2;
+				break;
+		}
+	}.bind(this), false);
+
+	// Listen for single click
+	/* Disabled until a good solution for click/dblclick timing is decided
+	this.canvas.addEventListener('click', function(e){ 
+		this.togglePlayback();
+	}, false); */
+
+	// Listen for double click
+	this.canvas.addEventListener('dblclick', function() {
+		this.toggleFullscreen();
+	}.bind(this), false);
+	
+	// Listen for mouse wheel
+	this.canvas.addEventListener('mousewheel',function(e){
+	  var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+	  this.zoom(delta);
+	  return false;
+	}.bind(this), false);
+	
+	// Animate
+	this.animloop = function() {
+		try {
+			// Detect changes in canvas size and adjust as necessary
+			/*
+			if (this.canvas.height != this.height || this.canvas.width != this.width) {
+				this.width = this.canvas.width;
+				this.height = this.canvas.height;
+				this.effect.setSize(videovr.width, videovr.height);
+				this.camera.aspect = this.canvas.width / this.canvas.height;
+				this.camera.updateProjectionMatrix();
+			} */
+			// Tell the texture to re-read from the video
+			if( this.video.readyState === this.video.HAVE_ENOUGH_DATA ){
+				this.texture.needsUpdate = true;
+			}
+			// Render the scene
+			switch (this.mode3D) {
+				case VRTheater.MODE_3D.NONE:
+					this.geometry.faceVertexUvs[0] = VRTheater.MAPPINGS.NO_3D;
+					this.geometry.uvsNeedUpdate = true;
+					this.effect.render(this.scene, this.camera);
+					break;
+				case VRTheater.MODE_3D.HORIZONTAL:
+					this.effect.render(this.scene, this.camera, function() {
+						this.geometry.faceVertexUvs[0] = VRTheater.MAPPINGS.HORIZONTAL_LEFT;
+						this.geometry.uvsNeedUpdate = true;
+					}.bind(this), function() {
+						this.geometry.faceVertexUvs[0] = VRTheater.MAPPINGS.HORIZONTAL_RIGHT;
+						this.geometry.uvsNeedUpdate = true;
+					}.bind(this));
+					break;
+			}
+			requestAnimationFrame(this.animloop.bind(this));
+		} catch (e) {
+			alert("Sorry, something went wrong.");
+			console.log(e);
+			this.destroy();
+		}
+	};
+	this.animloop();
 };
 
 VRTheater.Player.prototype = {
 
 	constructor: VRTheater.Player,
-	
+
 	// Show a temporary text message on the screen
 	toast: function(text) {
 		// TODO: Draw a texture, show a sprite
+	},
+
+	togglePlayback: function() {
+		if (this.video.paused)
+			this.video.play();
+		else
+			this.video.pause();
+		return this;
+	},
+
+	toggleFullscreen: function() {
+		var alreadyFullscreen = false;
+		// TODO: Determine
+		
+		if (alreadyFullscreen) {
+			if (document.cancelFullScreen) {
+				document.cancelFullScreen();
+			} else if (document.mozCancelFullScreen) {
+				document.mozCancelFullScreen();
+			} else if (document.webkitCancelFullScreen) {
+				document.webkitCancelFullScreen();
+			}
+		}
+		else {
+			if (this.canvas.requestFullscreen)
+				this.canvas.requestFullscreen();
+			else if (this.canvas.mozRequestFullScreen)
+				this.canvas.mozRequestFullScreen();
+			else if (this.canvas.webkitRequestFullscreen)
+				this.canvas.webkitRequestFullscreen();
+			else if (this.canvas.msRequestFullscreen)
+				this.canvas.msRequestFullscreen();
+			return this;
+		}
+	},
+
+	zoom: function(dir) {
+		if (dir == 1) { // Zoom in
+			this.screen.position.z += 1; // Move screen closer
+			if (this.screen.position.z > -1)
+				this.screen.position.z = -1; // Limit closeness
+		}    
+		else if (dir == -1) { // Zoom out
+			this.screen.position.z -= 1; // Move screen farther
+			if (this.screen.position.z < -99)
+				this.screen.position.z = -99; // Limit distance
+		}
 	},
 
 	destroy: function() {
