@@ -1,0 +1,161 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>VRTheater.js by BHSPitMonkey</title>
+
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>VRTheater.js</h1>
+        <p>A reusable, embeddable VR-mode HTML5 video player in JavaScript.</p>
+
+        <p class="view"><a href="https://github.com/BHSPitMonkey/VRTheater.js">View the Project on GitHub <small>BHSPitMonkey/VRTheater.js</small></a></p>
+
+
+        <ul>
+          <li><a href="https://github.com/BHSPitMonkey/VRTheater.js/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/BHSPitMonkey/VRTheater.js/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/BHSPitMonkey/VRTheater.js">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <h1>
+<a name="vrtheaterjs" class="anchor" href="#vrtheaterjs"><span class="octicon octicon-link"></span></a>VRTheater.js</h1>
+
+<p><strong>NOTE: THIS IS A WORK IN PROGRESS; IT IS NOT YET FULLY FUNCTIONAL.</strong></p>
+
+<p>A reusable, embeddable VR-mode HTML5 video player in JavaScript.</p>
+
+<h2>
+<a name="introduction" class="anchor" href="#introduction"><span class="octicon octicon-link"></span></a>Introduction</h2>
+
+<p>vrtheater.js is a drop-in JavaScript library that wraps any HTML5 video
+element in a player interface made for head-mounted displays like the
+Oculus Rift. Embed it into your web pages or web applications for an
+easy VR multimedia experience without leaving the browser.</p>
+
+<p><a href="http://threejs.org">three.js</a> is required.</p>
+
+<h2>
+<a name="quick-start" class="anchor" href="#quick-start"><span class="octicon octicon-link"></span></a>Quick Start</h2>
+
+<div class="highlight highlight-html"><pre><span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"three.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"OculusRiftEffect.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;script </span><span class="na">type=</span><span class="s">"text/javascript"</span> <span class="na">src=</span><span class="s">"vrtheater.js"</span><span class="nt">&gt;&lt;/script&gt;</span>
+<span class="nt">&lt;script&gt;</span>
+    <span class="kd">function</span> <span class="nx">go</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">video</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">"movie"</span><span class="p">);</span>
+        <span class="kd">var</span> <span class="nx">options</span> <span class="o">=</span> <span class="p">{};</span> <span class="c1">// Optional</span>
+        <span class="kd">var</span> <span class="nx">player</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">VRTheater</span><span class="p">.</span><span class="nx">Player</span><span class="p">(</span><span class="nx">video</span><span class="p">,</span> <span class="nx">options</span><span class="p">);</span>
+    <span class="p">}</span>
+<span class="nt">&lt;/script&gt;</span>
+...
+<span class="nt">&lt;video</span> <span class="na">id=</span><span class="s">"movie"</span> <span class="na">src=</span><span class="s">"movie.webm"</span><span class="nt">&gt;&lt;/video&gt;</span>
+<span class="nt">&lt;button</span> <span class="na">onclick=</span><span class="s">"go()"</span><span class="nt">&gt;</span>Start VR Mode<span class="nt">&lt;/button&gt;</span>
+</pre></div>
+
+<p>When you create a new VRTheater object and pass a video element to its 
+constructor, a VRTheater canvas will be created containing the VR player.
+By default, this player will cover the video element exactly, making itself
+the same size.</p>
+
+<h2>
+<a name="options" class="anchor" href="#options"><span class="octicon octicon-link"></span></a>Options</h2>
+
+<table>
+<thead><tr>
+<th><strong>Name</strong></th>
+<th><strong>Default</strong></th>
+<th><strong>Description</strong></th>
+</tr></thead>
+<tbody>
+<tr>
+<td>initialSize</td>
+<td><code>"coverVideo"</code></td>
+<td>Covers the video element, matching its size. Other options are <code>"fillWindow"</code> (player covers entire viewport) and <code>"none"</code> (player canvas is hidden until you explicitly add it to the DOM)</td>
+</tr>
+<tr>
+<td>startFullScreen</td>
+<td><code>false</code></td>
+<td>If true, the canvas will call requestFullscreen on itself when created.</td>
+</tr>
+</tbody>
+</table><h2>
+<a name="events" class="anchor" href="#events"><span class="octicon octicon-link"></span></a>Events</h2>
+
+<p>TODO</p>
+
+<h2>
+<a name="user-controls" class="anchor" href="#user-controls"><span class="octicon octicon-link"></span></a>User Controls</h2>
+
+<p>The player's canvas listens for mouse and keyboard events for
+controlling playback and requesting fullscreen mode.</p>
+
+<table>
+<thead><tr>
+<th></th>
+<th>Keyboard</th>
+<th>Mouse</th>
+<th>Gamepad</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><strong>Zoom in</strong></td>
+<td>Up</td>
+<td>Scroll up</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Zoom out</strong></td>
+<td>Down</td>
+<td>Scroll down</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Play/Pause</strong></td>
+<td>Space</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Fullscreen</strong></td>
+<td></td>
+<td>Double click</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Toggle 3D mode</strong></td>
+<td>M</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table><h2>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>Authors of included third-party code retain all rights to their contributions.
+(OculusRiftEffect.js was licensed by its 
+<a href="http://github.com/troffmo5">original author</a> under the terms of the MIT 
+License.)</p>
+
+<p>All other software in this repository is provided under the MIT License.
+Please see LICENSE for the full license text.</p>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/BHSPitMonkey">BHSPitMonkey</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
