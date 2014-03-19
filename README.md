@@ -59,4 +59,10 @@ controlling playback and requesting fullscreen mode.
 
 ## License
 
-MIT License
+Authors of included third-party code retain all rights to their contributions.
+(OculusRiftEffect.js was licensed by its 
+[original author](http://github.com/troffmo5) under the terms of the MIT 
+License.)
+
+All other software in this repository is provided under the MIT License.
+Please see LICENSE for the full license text.
