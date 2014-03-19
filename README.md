@@ -13,6 +13,8 @@ easy VR multimedia experience without leaving the browser.
 
 [three.js](http://threejs.org) is required.
 
+See a live demo [here](http://bhspitmonkey.github.io/VRTheater.js/demo.html).
+
 ## Quick Start
 
 ```html
