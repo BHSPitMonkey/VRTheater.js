@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+	<title>Demo</title>
+	<script src="javascripts//three.js"></script>
+	<script src="javascripts/OculusRiftEffect.js"></script>
+	<script src="javascripts/vrtheater.js"></script>
+	<script>
+		function go() {
+			var video = document.getElementById("movie");
+			var player = new VRTheater.Player(video);
+		}
+	</script>
+</head>
+<body>
+	<video id="movie" src="movie.webm" height="480" controls></video>
+	<br>
+	<button onclick="go()">Start VR Mode</button>
+</body>
+</html>
