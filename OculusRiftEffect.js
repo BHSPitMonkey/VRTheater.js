@@ -4,8 +4,6 @@
  * Effect to render the scene in stereo 3d side by side with lens distortion.
  * It is written to be used with the Oculus Rift (http://www.oculusvr.com/) but
  * it works also with other HMD using the same technology
- * 
- * Very minor edits by Stephen Eisenhauer / http://github.com/BHSPitMonkey
  */
 
 THREE.OculusRiftEffect = function ( renderer, options ) {
@@ -147,21 +145,18 @@ THREE.OculusRiftEffect = function ( renderer, options ) {
 
 	this.setHMD(HMD);	
 
+	// setSize implementation overridden for use in vrtheater.js
+	// (We want the HMD size to match the renderer size)
 	this.setSize = function ( width, height ) {
-		// Edited to force the HMD resolution to equal the size, since it never
-		// really makes sense to center this thing anyway
 		HMD.hResolution = width;
 		HMD.vResolution = height;
 		this.setHMD(HMD); // perform new calculations
-		left.viewport = [0, 0, HMD.hResolution/2, HMD.vResolution];
-		right.viewport = [width/2, 0, HMD.hResolution/2, HMD.vResolution];
-		//left.viewport = [width/2 - HMD.hResolution/2, height/2 - HMD.vResolution/2, HMD.hResolution/2, HMD.vResolution];
-		//right.viewport = [width/2, height/2 - HMD.vResolution/2, HMD.hResolution/2, HMD.vResolution];
-
+		left.viewport = [0, 0, width/2, height];
+		right.viewport = [width/2, 0, width/2, height];
 		renderer.setSize( width, height );
 	};
 
-	this.render = function ( scene, camera, preLeftRender, preRightRender ) {
+	this.render = function ( scene, camera ) {
 		var cc = renderer.getClearColor().clone();
 
 		// Clear
@@ -173,8 +168,7 @@ THREE.OculusRiftEffect = function ( renderer, options ) {
 		if (camera.matrixAutoUpdate) camera.updateMatrix();
 
 		// Render left
-		if (preLeftRender !== undefined)
-			preLeftRender();
+		this.preLeftRender();
 
 		pCamera.projectionMatrix.copy(left.proj);
 
@@ -189,8 +183,7 @@ THREE.OculusRiftEffect = function ( renderer, options ) {
 		renderer.render( finalScene, oCamera );
 
 		// Render right
-		if (preRightRender !== undefined)
-			preRightRender();
+		this.preRightRender();
 
 		pCamera.projectionMatrix.copy(right.proj);
 

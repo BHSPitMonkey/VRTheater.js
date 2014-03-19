@@ -42,7 +42,7 @@ VRTheater.Player = function(video, options) {
 
 	// Three.js setup
 	this.scene = new THREE.Scene();
-	this.camera = new THREE.PerspectiveCamera( 75, video.videoWidth/video.videoHeight, 0.1, 1000 );
+	this.camera = new THREE.PerspectiveCamera( 75, 16.0/10.0, 0.1, 1000 );
 	this.renderer = new THREE.WebGLRenderer();
 	this.canvas = this.renderer.domElement;
 
@@ -54,7 +54,8 @@ VRTheater.Player = function(video, options) {
 			this.canvas.style.zIndex = 1;
 			if (this.video.style.zIndex)
 				this.canvas.style.zIndex = 1 + parseInt(this.video.style.zIndex);
-			this.video.parentNode.appendChild(this.canvas);
+			this.video.parentNode.insertBefore(this.canvas, this.video);
+			this.canvas.focus();
 			break;
 		case "fillWindow":
 			this.canvas.style.position = "fixed";
@@ -68,6 +69,7 @@ VRTheater.Player = function(video, options) {
 			this.width = window.innerWidth;
 			this.height = window.innerHeight;
 			document.body.appendChild(this.canvas);
+			this.canvas.focus();
 			break;
 		case "none":
 		default:
@@ -78,11 +80,34 @@ VRTheater.Player = function(video, options) {
 	if (this.options.startFullscreen === true) {
 		this.toggleFullscreen(true);
 	}
+	
+	this.width = this.canvas.offsetWidth;
+	this.height = this.canvas.offsetHeight;
 
 	// Add OculusRiftEffect
 	this.effect = new THREE.OculusRiftEffect(this.renderer);
-	this.effect.setSize(this.canvas.width, this.canvas.height);
-	
+	this.effect.setSize(this.width, this.height);
+	this.effect.preLeftRender = function() {
+		switch (this.mode3D) {
+			case VRTheater.MODE_3D.NONE:
+				this.geometry.faceVertexUvs[0] = VRTheater.MAPPINGS.NO_3D;
+				this.geometry.uvsNeedUpdate = true;
+				break;
+			case VRTheater.MODE_3D.HORIZONTAL:
+				this.geometry.faceVertexUvs[0] = VRTheater.MAPPINGS.HORIZONTAL_LEFT;
+				this.geometry.uvsNeedUpdate = true;
+				break;
+		}
+	}.bind(this);
+	this.effect.preRightRender = function() {
+		switch (this.mode3D) {
+			case VRTheater.MODE_3D.HORIZONTAL:
+				this.geometry.faceVertexUvs[0] = VRTheater.MAPPINGS.HORIZONTAL_RIGHT;
+				this.geometry.uvsNeedUpdate = true;
+				break;
+		}
+	}.bind(this);
+
 	// Internal state
 	this.mode3D = VRTheater.MODE_3D.NONE;
 
@@ -144,40 +169,23 @@ VRTheater.Player = function(video, options) {
 	  this.zoom(delta);
 	  return false;
 	}.bind(this), false);
-	
+
 	// Animate
 	this.animloop = function() {
 		try {
 			// Detect changes in canvas size and adjust as necessary
-			/*
-			if (this.canvas.height != this.height || this.canvas.width != this.width) {
-				this.width = this.canvas.width;
-				this.height = this.canvas.height;
-				this.effect.setSize(videovr.width, videovr.height);
-				this.camera.aspect = this.canvas.width / this.canvas.height;
+			if (this.canvas.offsetHeight != this.height || this.canvas.offsetWidth != this.width) {
+				this.width = this.canvas.offsetWidth;
+				this.height = this.canvas.offsetHeight;
+				this.effect.setSize(this.width, this.height);
+				this.camera.aspect = this.width / this.height;
 				this.camera.updateProjectionMatrix();
-			} */
+			}
 			// Tell the texture to re-read from the video
 			if( this.video.readyState === this.video.HAVE_ENOUGH_DATA ){
 				this.texture.needsUpdate = true;
 			}
-			// Render the scene
-			switch (this.mode3D) {
-				case VRTheater.MODE_3D.NONE:
-					this.geometry.faceVertexUvs[0] = VRTheater.MAPPINGS.NO_3D;
-					this.geometry.uvsNeedUpdate = true;
-					this.effect.render(this.scene, this.camera);
-					break;
-				case VRTheater.MODE_3D.HORIZONTAL:
-					this.effect.render(this.scene, this.camera, function() {
-						this.geometry.faceVertexUvs[0] = VRTheater.MAPPINGS.HORIZONTAL_LEFT;
-						this.geometry.uvsNeedUpdate = true;
-					}.bind(this), function() {
-						this.geometry.faceVertexUvs[0] = VRTheater.MAPPINGS.HORIZONTAL_RIGHT;
-						this.geometry.uvsNeedUpdate = true;
-					}.bind(this));
-					break;
-			}
+			this.effect.render(this.scene, this.camera); // Render the scene
 			requestAnimationFrame(this.animloop.bind(this));
 		} catch (e) {
 			alert("Sorry, something went wrong.");
