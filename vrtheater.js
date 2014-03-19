@@ -92,7 +92,7 @@ VRTheater.Player = function(video, options) {
 	var material = new THREE.MeshBasicMaterial({
 		map: this.texture,
 		overdraw: true,
-		side:THREE.DoubleSide
+		side:THREE.FrontSide
 	});
 	this.screen = new THREE.Mesh(this.geometry, material);
 	this.screen.position.z = -10;
