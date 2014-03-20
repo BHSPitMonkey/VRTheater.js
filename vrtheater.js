@@ -130,6 +130,34 @@ VRTheater.Player = function(video, options) {
 	var cube = new THREE.Mesh( cubegeometry, cubematerial );
 	this.scene.add(cube);
 
+	// Set up controls HUD
+	this.controls = {};
+	this.controls.geometry = new THREE.PlaneGeometry(8, 1);
+	this.controls.canvas = document.createElement('canvas');
+	this.controls.ctx = this.controls.canvas.getContext('2d');
+	this.controls.canvas.width = 1024;
+	this.controls.canvas.height = 128;
+	this.controls.texture = new THREE.Texture(this.controls.canvas);
+	var controlsMaterial = new THREE.MeshBasicMaterial({
+		map: this.controls.texture,
+		overdraw: true,
+		side:THREE.FrontSide
+	});
+	this.controls.mesh = new THREE.Mesh(this.controls.geometry, controlsMaterial);
+	this.controls.mesh.position.y = -2;
+	this.controls.mesh.position.z = -4.5;
+	this.controls.visible = true;
+	this.controls.update = function() {
+		var ctx = this.controls.ctx;
+		ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+		ctx.fillStyle = "#444";
+		ctx.fillRect (150, 50, 650, 28);
+		ctx.fillStyle = "#ccc";
+		ctx.fillRect (150, 50, 650*(this.video.currentTime/this.video.duration), 28);
+	}.bind(this);
+	this.scene.add(this.controls.mesh);
+
 	// Set up keyboard capture
 	document.addEventListener("keydown", function(e) {
 		e = e || window.event;
@@ -181,9 +209,14 @@ VRTheater.Player = function(video, options) {
 				this.camera.aspect = this.width / this.height;
 				this.camera.updateProjectionMatrix();
 			}
-			// Tell the texture to re-read from the video
+			// Update the video texture
 			if( this.video.readyState === this.video.HAVE_ENOUGH_DATA ){
 				this.texture.needsUpdate = true;
+			}
+			// Update the UI controls texture
+			if (this.controls.visible === true) {
+				this.controls.update();
+				this.controls.texture.needsUpdate = true;
 			}
 			this.effect.render(this.scene, this.camera); // Render the scene
 			requestAnimationFrame(this.animloop.bind(this));
